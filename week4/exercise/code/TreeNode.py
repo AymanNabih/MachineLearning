@@ -34,12 +34,12 @@ class TreeNode(object):
         col_value = x[self.column]
 
         if self.categorical:
-            if True:  ### REPLACE WITH YOUR CODE
+            if col_value >= self.value:  ### REPLACE WITH YOUR CODE
                 return self.left.predict_one(x)
             else:
                 return self.right.predict_one(x)
         else:
-            if True:  ### REPLACE WITH YOUR CODE
+            if col_value == self.value:  ### REPLACE WITH YOUR CODE
                 return self.left.predict_one(x)
             else:
                 return self.right.predict_one(x)

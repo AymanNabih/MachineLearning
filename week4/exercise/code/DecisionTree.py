@@ -93,7 +93,12 @@ class DecisionTree(object):
         '''
 
         ### YOUR CODE HERE
-        return 0.0
+        pos = np.count_nonzero(y)
+        entropy = 0
+        for i in y:
+            if i != 0:
+                entropy+=-pos/len(y)*np.log(pos/len(y))
+        return entropy
 
     def _gini(self, y):
         '''
@@ -106,7 +111,12 @@ class DecisionTree(object):
         '''
 
         ### YOUR CODE HERE
-        return 0.0
+        pos = y.count_nonzero()
+        gini = 0
+        for i in y:
+            if i != 0:
+                gini+=pos/len(y)*(1-pos/len(y))
+        return gini
 
     def _make_split(self, X, y, split_index, split_value):
         '''
@@ -132,7 +142,18 @@ class DecisionTree(object):
         '''
 
         ### YOUR CODE HERE
-        return None, None, None, None
+        Z = np.hstack((X,y.reshape(-1,1)))
+        if isinstance(split_value, int) or isinstance(split_value, float):
+            X1 = X[X[:, split_index] >= split_value, :] 
+            X2 = X[X[:, split_index] < split_value, :]
+            y1 = Z[Z[:, split_index] >= split_value, -1]
+            y2 = Z[Z[:, split_index] < split_value, -1]
+        else:
+            X1 = X[X[:, split_index] == split_value, :]
+            X2 = X[X[:, split_index] != split_value, :]
+            y1 = Z[Z[:, split_index] == split_value, -1]
+            y2 = Z[Z[:, split_index] != split_value, -1]
+        return X1,X2,y1,y2
 
     def _information_gain(self, y, y1, y2):
         '''
@@ -148,9 +169,10 @@ class DecisionTree(object):
         Use self.impurity_criterion(y) rather than calling _entropy or _gini
         directly.
         '''
-
+        
         ### YOUR CODE HERE
-        return 0.0
+        return self.impurity_criterion(y)-((self.impurity_criterion(y1)
+                                           +self.impurity_criterion(y2))/2)
 
     def _choose_split_index(self, X, y):
         '''
@@ -172,9 +194,23 @@ class DecisionTree(object):
         >>> index, value, splits = self._choose_split_index(X, y)
         >>> X1, y1, X2, y2 = splits
         '''
-
-        ### YOUR CODE HERE
-        return None, None, None
+        best_score = 0
+        best_index = 0
+        best_value = ''
+        cols = len(X[0,:])
+        for i in xrange(cols):
+            for j in set(X[:,i]):
+                X1, X2, y1, y2 = self._make_split(X, y, i, j)
+                score = self._information_gain(y, y1, y2)
+                if score > best_score:
+                    best_score = score
+                    best_index = i
+                    best_value = j
+                    bestX1, bestX2, besty1, besty2 = X1, X2, y1, y2
+        if best_score > 0:
+            return best_index, best_value, (bestX1, bestX2, besty1, besty2)
+        else:
+            return None, None, None
 
     def predict(self, X):
         '''
