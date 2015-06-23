@@ -1,8 +1,10 @@
+from __future__ import division
 import pandas as pd
 import numpy as np
 import math
 from collections import Counter
 from TreeNode import TreeNode
+
 
 
 class DecisionTree(object):
@@ -91,14 +93,19 @@ class DecisionTree(object):
 
         Return the entropy of the array y.
         '''
-
         ### YOUR CODE HERE
         pos = np.count_nonzero(y)
-        entropy = 0
-        for i in y:
-            if i != 0:
-                entropy+=-pos/len(y)*np.log(pos/len(y))
-        return entropy
+        print y
+        ylen = len(y)
+        if ylen> 0:
+            pentropy=(-pos/ylen)*np.log(pos/ylen)
+            nentropy=((ylen-pos)/-ylen)*np.log((ylen-pos)/ylen)
+#             print pentropy
+#             print nentropy
+#             print pentropy+nentropy
+            return pentropy+nentropy
+        else:
+            return 0
 
     def _gini(self, y):
         '''
@@ -112,12 +119,13 @@ class DecisionTree(object):
 
         ### YOUR CODE HERE
         pos = y.count_nonzero()
-        gini = 0
-        for i in y:
-            if i != 0:
-                gini+=pos/len(y)*(1-pos/len(y))
-        return gini
-
+        ylen = len(y)
+        if ylen> 0:
+            gini = 1-((pos/ylen)**2+((ylen-pos)/ylen)**2)
+            print gini
+            return gini
+        else:
+            return 0
     def _make_split(self, X, y, split_index, split_value):
         '''
         INPUT:
@@ -142,7 +150,10 @@ class DecisionTree(object):
         '''
 
         ### YOUR CODE HERE
+        print X
+        print y
         Z = np.hstack((X,y.reshape(-1,1)))
+        print Z
         if isinstance(split_value, int) or isinstance(split_value, float):
             X1 = X[X[:, split_index] >= split_value, :] 
             X2 = X[X[:, split_index] < split_value, :]
@@ -153,6 +164,10 @@ class DecisionTree(object):
             X2 = X[X[:, split_index] != split_value, :]
             y1 = Z[Z[:, split_index] == split_value, -1]
             y2 = Z[Z[:, split_index] != split_value, -1]
+        print X1
+        print X2
+        print y1
+        print y2
         return X1,X2,y1,y2
 
     def _information_gain(self, y, y1, y2):
@@ -169,10 +184,16 @@ class DecisionTree(object):
         Use self.impurity_criterion(y) rather than calling _entropy or _gini
         directly.
         '''
-        
+        if len(y1) == 0:
+            return self.impurity_criterion(y)-self.impurity_criterion(y2)
+        if len(y2) == 0:
+            return self.impurity_criterion(y)-self.impurity_criterion(12)
         ### YOUR CODE HERE
-        return self.impurity_criterion(y)-((self.impurity_criterion(y1)
-                                           +self.impurity_criterion(y2))/2)
+        print self.impurity_criterion(y)-(self.impurity_criterion(y1)*(len(y1)/len(y))
+                                           +self.impurity_criterion(y2)*(len(y2)/len(y)))
+
+        return self.impurity_criterion(y)-(self.impurity_criterion(y1)*(len(y1)/len(y))
+                                           +self.impurity_criterion(y2)*(len(y2)/len(y)))
 
     def _choose_split_index(self, X, y):
         '''

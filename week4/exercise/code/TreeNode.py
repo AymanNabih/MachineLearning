@@ -1,5 +1,7 @@
-from collections import Counter
+from __future__ import division
 import numpy as np
+from collections import Counter
+
 
 class TreeNode(object):
     '''
