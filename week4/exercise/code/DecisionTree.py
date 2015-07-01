@@ -94,18 +94,24 @@ class DecisionTree(object):
         Return the entropy of the array y.
         '''
         ### YOUR CODE HERE
-        pos = np.count_nonzero(y)
-        print y
-        ylen = len(y)
-        if ylen> 0:
-            pentropy=(-pos/ylen)*np.log(pos/ylen)
-            nentropy=((ylen-pos)/-ylen)*np.log((ylen-pos)/ylen)
-#             print pentropy
-#             print nentropy
-#             print pentropy+nentropy
-            return pentropy+nentropy
-        else:
+#         print type(y)
+#         print y
+        if y is None:
             return 0
+        else:
+            ylen = len(y)
+            pos = np.count_nonzero(y)
+            if pos == 0:
+                return 0
+            else:
+                print -pos/ylen 
+                print np.log(pos/ylen)
+                print -pos/ylen * np.log(pos/ylen)
+                print
+                pentropy=(-pos/ylen)*np.log(pos/ylen)
+                nentropy=((ylen-pos)/-ylen)*np.log((ylen-pos)/ylen)
+                return pentropy+nentropy
+
 
     def _gini(self, y):
         '''
@@ -118,11 +124,10 @@ class DecisionTree(object):
         '''
 
         ### YOUR CODE HERE
-        pos = y.count_nonzero()
         ylen = len(y)
+        pos = y.count_nonzero()
         if ylen> 0:
             gini = 1-((pos/ylen)**2+((ylen-pos)/ylen)**2)
-            print gini
             return gini
         else:
             return 0
@@ -150,10 +155,11 @@ class DecisionTree(object):
         '''
 
         ### YOUR CODE HERE
-        print X
-        print y
-        Z = np.hstack((X,y.reshape(-1,1)))
-        print Z
+        try:
+            #For some reason I'm getting mutating sizes of X and y (non-matching # of rows) so here's the hacky workaround
+            Z = np.hstack((X,y.reshape(-1,1)))
+        except:
+            return X,None,y,None
         if isinstance(split_value, int) or isinstance(split_value, float):
             X1 = X[X[:, split_index] >= split_value, :] 
             X2 = X[X[:, split_index] < split_value, :]
@@ -164,10 +170,10 @@ class DecisionTree(object):
             X2 = X[X[:, split_index] != split_value, :]
             y1 = Z[Z[:, split_index] == split_value, -1]
             y2 = Z[Z[:, split_index] != split_value, -1]
-        print X1
-        print X2
-        print y1
-        print y2
+#         print X1.shape
+#         print X2.shape
+#         print y1.shape
+#         print y2.shape
         return X1,X2,y1,y2
 
     def _information_gain(self, y, y1, y2):
@@ -184,15 +190,15 @@ class DecisionTree(object):
         Use self.impurity_criterion(y) rather than calling _entropy or _gini
         directly.
         '''
-        if len(y1) == 0:
+        if y2 is None:
             return self.impurity_criterion(y)-self.impurity_criterion(y2)
-        if len(y2) == 0:
-            return self.impurity_criterion(y)-self.impurity_criterion(12)
+        elif y1 is None:
+            return self.impurity_criterion(y)-self.impurity_criterion(y1)
         ### YOUR CODE HERE
-        print self.impurity_criterion(y)-(self.impurity_criterion(y1)*(len(y1)/len(y))
-                                           +self.impurity_criterion(y2)*(len(y2)/len(y)))
-
-        return self.impurity_criterion(y)-(self.impurity_criterion(y1)*(len(y1)/len(y))
+#         print self.impurity_criterion(y)-(self.impurity_criterion(y1)*(len(y1)/len(y))
+#                                            +self.impurity_criterion(y2)*(len(y2)/len(y)))
+        else:
+            return self.impurity_criterion(y)-(self.impurity_criterion(y1)*(len(y1)/len(y))
                                            +self.impurity_criterion(y2)*(len(y2)/len(y)))
 
     def _choose_split_index(self, X, y):
@@ -220,9 +226,16 @@ class DecisionTree(object):
         best_value = ''
         cols = len(X[0,:])
         for i in xrange(cols):
+#             print X[:,i]
             for j in set(X[:,i]):
                 X1, X2, y1, y2 = self._make_split(X, y, i, j)
+#                 print len(y)
+#                 print len(y1)
+#                 print np.count_nonzero(y1)
+#                 print np.count_nonzero(y2)
+#                 print len(y2)
                 score = self._information_gain(y, y1, y2)
+#                 print '{} : {}'.format(j,score)
                 if score > best_score:
                     best_score = score
                     best_index = i

@@ -8,6 +8,7 @@ def test_tree(filename):
     y = df.pop('Result').values
     X = df.values
     print X
+    print y
     
     tree = DecisionTree()
     tree.fit(X, y, df.columns)
